@@ -3,17 +3,19 @@
 import { useState } from "react";
 import ActionCard from "@/components/ActionCard";
 import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/languages";
-import { MOCK_RESULT } from "@/lib/mock";
+import { MAX_CHARS } from "@/lib/limits";
+import { SAMPLES } from "@/lib/samples";
 import type { DecodeResult } from "@/lib/types";
 
-const MAX_CHARS = 6000;
+type ErrorState = { message: string; canRetry: boolean };
 
 export default function Home() {
   const [text, setText] = useState("");
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<DecodeResult | null>(null);
+  const [resultBeta, setResultBeta] = useState(false);
 
   const selected = findLanguage(language);
   const tooLong = text.length > MAX_CHARS;
@@ -21,18 +23,39 @@ export default function Home() {
   async function decode() {
     setError(null);
     if (!text.trim()) {
-      setError("Paste the text of a letter first.");
+      setError({ message: "Paste the text of a letter first.", canRetry: false });
       return;
     }
     if (tooLong) {
-      setError(`This text is too long. Keep it under ${MAX_CHARS} characters.`);
+      setError({
+        message: `This text is too long. Keep it under ${MAX_CHARS} characters.`,
+        canRetry: false,
+      });
       return;
     }
     setLoading(true);
     setResult(null);
-    await new Promise((r) => setTimeout(r, 1200));
-    setResult(MOCK_RESULT);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/decode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, language }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        setError({
+          message: data?.message ?? "Something went wrong. Please try again.",
+          canRetry: res.status >= 500 || !data,
+        });
+        return;
+      }
+      setResult(data as DecodeResult);
+      setResultBeta(selected?.beta ?? false);
+    } catch {
+      setError({ message: "No connection. Check your internet and try again.", canRetry: true });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -46,6 +69,31 @@ export default function Home() {
       </header>
 
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div>
+          <p className="mb-2 text-sm font-semibold text-slate-900">
+            Try a sample{" "}
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
+              demo data, fictional letters
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {SAMPLES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setText(s.text);
+                  setResult(null);
+                  setError(null);
+                }}
+                className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm text-slate-800 hover:bg-slate-50"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div>
           <label htmlFor="letter" className="mb-1 block font-semibold text-slate-900">
             Letter text
@@ -100,16 +148,31 @@ export default function Home() {
 
       <div className="mt-6" aria-live="polite">
         {error && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-red-800" role="alert">
-            {error}
-          </p>
+          <div className="rounded-lg bg-red-50 px-3 py-3 text-red-800" role="alert">
+            <p>{error.message}</p>
+            {error.canRetry && (
+              <button
+                type="button"
+                onClick={decode}
+                className="mt-2 min-h-11 rounded-lg bg-red-700 px-4 text-sm font-semibold text-white hover:bg-red-800"
+              >
+                Try again
+              </button>
+            )}
+          </div>
         )}
         {loading && (
           <p className="animate-pulse text-center text-slate-600">
             Finding the sender, the deadline and what you need to do…
           </p>
         )}
-        {result && <ActionCard result={result} beta={selected?.beta ?? false} />}
+        {result && !result.is_official_letter && (
+          <p className="rounded-lg bg-slate-100 px-3 py-3 text-slate-800">
+            This does not look like an official letter. Carta Clara works with letters from
+            Portuguese public bodies, like the tax office, social security or the city hall.
+          </p>
+        )}
+        {result && result.is_official_letter && <ActionCard result={result} beta={resultBeta} />}
       </div>
 
       <footer className="mt-10 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
