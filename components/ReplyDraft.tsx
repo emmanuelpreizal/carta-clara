@@ -40,7 +40,7 @@ export default function ReplyDraft({ draftPt, translation }: Props) {
           <button
             type="button"
             onClick={copy}
-            className="mt-2 min-h-11 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-700"
+            className="mt-2 min-h-11 rounded-lg bg-azul px-4 text-sm font-semibold text-white hover:bg-azul-dark"
           >
             {copied ? "Copied" : "Copy the Portuguese text"}
           </button>

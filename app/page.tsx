@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ActionCard from "@/components/ActionCard";
 import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/languages";
 import { MAX_CHARS } from "@/lib/limits";
@@ -17,8 +17,16 @@ export default function Home() {
   const [result, setResult] = useState<DecodeResult | null>(null);
   const [resultBeta, setResultBeta] = useState(false);
 
+  const outputRef = useRef<HTMLDivElement>(null);
+
   const selected = findLanguage(language);
   const tooLong = text.length > MAX_CHARS;
+
+  useEffect(() => {
+    if (loading || result || error) {
+      outputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [loading, result, error]);
 
   async function decode() {
     setError(null);
@@ -61,11 +69,25 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:py-10">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-900">Carta Clara</h1>
+        <p className="mb-2 inline-block rounded-full bg-azul-light px-3 py-1 text-xs font-semibold text-azul">
+          For newcomers to Portugal
+        </p>
+        <h1 className="text-3xl font-bold text-azul">Carta Clara</h1>
         <p className="mt-1 text-slate-600">
           Paste an official Portuguese letter. Understand in seconds what it asks, by when, and
           what to do.
         </p>
+        <ol className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-700">
+          <li>
+            <span className="font-bold text-azul">1.</span> Paste the letter
+          </li>
+          <li>
+            <span className="font-bold text-azul">2.</span> Pick your language
+          </li>
+          <li>
+            <span className="font-bold text-azul">3.</span> Get what to do and by when
+          </li>
+        </ol>
       </header>
 
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -102,7 +124,7 @@ export default function Home() {
             id="letter"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={8}
+            rows={5}
             placeholder="Paste the text of the letter or email here…"
             className="w-full rounded-lg border border-slate-300 p-3 text-base text-slate-900 focus:border-slate-900 focus:outline-none"
           />
@@ -136,7 +158,7 @@ export default function Home() {
           type="button"
           onClick={decode}
           disabled={loading}
-          className="min-h-12 w-full rounded-xl bg-slate-900 text-lg font-bold text-white hover:bg-slate-700 disabled:opacity-60"
+          className="min-h-12 w-full rounded-xl bg-azul text-lg font-bold text-white hover:bg-azul-dark disabled:opacity-60"
         >
           {loading ? "Reading your letter…" : "Decode it"}
         </button>
@@ -146,7 +168,7 @@ export default function Home() {
         </p>
       </section>
 
-      <div className="mt-6" aria-live="polite">
+      <div ref={outputRef} className="mt-6 scroll-mt-4" aria-live="polite">
         {error && (
           <div className="rounded-lg bg-red-50 px-3 py-3 text-red-800" role="alert">
             <p>{error.message}</p>

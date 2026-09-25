@@ -6,6 +6,12 @@
   --foreground: #0f172a;
 }
 
+@theme {
+  --color-azul: #1f4e8c;
+  --color-azul-dark: #163a69;
+  --color-azul-light: #e8eff8;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
