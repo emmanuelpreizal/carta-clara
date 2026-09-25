@@ -6,7 +6,7 @@ import {
   formatDeadline,
   type DisplayUrgency,
 } from "@/lib/dates";
-import { buildIcs, downloadIcs } from "@/lib/ics";
+import { buildIcs, downloadIcs, googleCalendarUrl } from "@/lib/ics";
 import { BETA_NOTICE } from "@/lib/languages";
 import ReplyDraft from "./ReplyDraft";
 
@@ -31,8 +31,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function addToCalendar(result: DecodeResult) {
-  if (!result.deadline) return;
+function calendarEvent(result: DecodeResult, deadline: string) {
   const title = `Deadline: ${result.document_type}${result.sender ? ` (${result.sender})` : ""}`;
   const description = [
     result.summary,
@@ -44,9 +43,34 @@ function addToCalendar(result: DecodeResult) {
   ]
     .filter((line, i, all) => line !== "" || all[i - 1] !== "")
     .join("\n");
-  downloadIcs(
-    `deadline-${result.deadline}.ics`,
-    buildIcs({ deadline: result.deadline, title, description }),
+  return { deadline, title, description };
+}
+
+function CalendarButtons({ result, deadline }: { result: DecodeResult; deadline: string }) {
+  const event = calendarEvent(result, deadline);
+  const buttonClass =
+    "flex min-h-11 items-center rounded-lg border border-azul px-4 text-sm font-semibold text-azul hover:bg-azul-light";
+  return (
+    <div className="mt-3">
+      <p className="mb-2 text-sm font-semibold text-slate-900">Add the deadline to your calendar</p>
+      <div className="flex flex-wrap gap-2">
+        <a
+          href={googleCalendarUrl(event)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonClass}
+        >
+          Google Calendar
+        </a>
+        <button
+          type="button"
+          onClick={() => downloadIcs(`deadline-${deadline}.ics`, buildIcs(event))}
+          className={buttonClass}
+        >
+          Apple / Outlook (.ics file, reminder 3 days before)
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -103,13 +127,7 @@ export default function ActionCard({ result, beta }: Props) {
           )}
           {result.deadline_quote && <Quote text={result.deadline_quote} />}
           {result.deadline && (days === null || days >= 0) && (
-            <button
-              type="button"
-              onClick={() => addToCalendar(result)}
-              className="mt-3 min-h-11 rounded-lg border border-azul px-4 text-sm font-semibold text-azul hover:bg-azul-light"
-            >
-              Add to calendar (reminder 3 days before)
-            </button>
+            <CalendarButtons result={result} deadline={result.deadline} />
           )}
         </Section>
       )}

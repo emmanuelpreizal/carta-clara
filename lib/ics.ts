@@ -46,6 +46,23 @@ export function buildIcs(params: {
   return lines.map(fold).join("\r\n") + "\r\n";
 }
 
+export function googleCalendarUrl(params: {
+  deadline: string;
+  title: string;
+  description: string;
+}): string {
+  const [y, m, d] = params.deadline.split("-").map(Number);
+  const start = compactDate(new Date(Date.UTC(y, m - 1, d)));
+  const end = compactDate(new Date(Date.UTC(y, m - 1, d + 1)));
+  const query = new URLSearchParams({
+    action: "TEMPLATE",
+    text: params.title,
+    dates: `${start}/${end}`,
+    details: params.description,
+  });
+  return `https://calendar.google.com/calendar/render?${query.toString()}`;
+}
+
 export function downloadIcs(filename: string, content: string) {
   const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
