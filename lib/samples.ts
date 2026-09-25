@@ -48,7 +48,7 @@ Solicitamos que envie os seguintes documentos:
 - Cópia do documento de identificação válido;
 - Declaração de início de atividade emitida pelas Finanças.
 
-Os documentos devem ser entregues no prazo de 10 dias úteis a contar da data de receção deste ofício, através da Segurança Social Direta ou presencialmente num balcão de atendimento.
+Os documentos devem ser entregues no prazo de 10 dias úteis a contar da data de receção deste ofício, através da Segurança Social Direta, por correio eletrónico para documentos.lisboa@seguranca-social.example ou presencialmente num balcão de atendimento.
 
 Se os documentos não forem entregues dentro do prazo, o pedido será arquivado.
 

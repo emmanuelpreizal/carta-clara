@@ -67,13 +67,20 @@ export function verifyResult(
     out.deadline = null;
   }
 
-  if (source === null) {
-    if (!out.reply_needed) {
-      out.reply_draft_pt = null;
-      out.reply_draft_translation = null;
-    }
-    return out;
+  if (out.reply_email) {
+    const email = out.reply_email.trim();
+    const looksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const inText = source === null || normalize(source).includes(normalize(email));
+    out.reply_email = looksValid && inText ? email : null;
   }
+
+  if (!out.reply_needed) {
+    out.reply_subject_pt = null;
+    out.reply_draft_pt = null;
+    out.reply_draft_translation = null;
+  }
+
+  if (source === null) return out;
 
   const hasDeadline = Boolean(out.deadline || out.deadline_relative);
   if (hasDeadline && !appearsIn(out.deadline_quote, source)) {
@@ -87,11 +94,6 @@ export function verifyResult(
     out.amount_text = null;
     out.amount_quote = null;
     out.uncertainties.push(messages.amount);
-  }
-
-  if (!out.reply_needed) {
-    out.reply_draft_pt = null;
-    out.reply_draft_translation = null;
   }
 
   return out;

@@ -6,6 +6,7 @@ import {
   formatDeadline,
   type DisplayUrgency,
 } from "@/lib/dates";
+import { buildIcs, downloadIcs } from "@/lib/ics";
 import { BETA_NOTICE } from "@/lib/languages";
 import ReplyDraft from "./ReplyDraft";
 
@@ -27,6 +28,25 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
       {children}
     </section>
+  );
+}
+
+function addToCalendar(result: DecodeResult) {
+  if (!result.deadline) return;
+  const title = `Deadline: ${result.document_type}${result.sender ? ` (${result.sender})` : ""}`;
+  const description = [
+    result.summary,
+    "",
+    ...result.actions.map((a, i) => `${i + 1}. ${a}`),
+    "",
+    result.amount_text ? `Amount: ${result.amount_text}` : "",
+    "Check the date on the original letter. Created with Carta Clara. Not legal or tax advice.",
+  ]
+    .filter((line, i, all) => line !== "" || all[i - 1] !== "")
+    .join("\n");
+  downloadIcs(
+    `deadline-${result.deadline}.ics`,
+    buildIcs({ deadline: result.deadline, title, description }),
   );
 }
 
@@ -82,6 +102,15 @@ export default function ActionCard({ result, beta }: Props) {
             </p>
           )}
           {result.deadline_quote && <Quote text={result.deadline_quote} />}
+          {result.deadline && (days === null || days >= 0) && (
+            <button
+              type="button"
+              onClick={() => addToCalendar(result)}
+              className="mt-3 min-h-11 rounded-lg border border-azul px-4 text-sm font-semibold text-azul hover:bg-azul-light"
+            >
+              Add to calendar (reminder 3 days before)
+            </button>
+          )}
         </Section>
       )}
 
@@ -135,7 +164,12 @@ export default function ActionCard({ result, beta }: Props) {
       )}
 
       {result.reply_needed && result.reply_draft_pt && (
-        <ReplyDraft draftPt={result.reply_draft_pt} translation={result.reply_draft_translation} />
+        <ReplyDraft
+          draftPt={result.reply_draft_pt}
+          translation={result.reply_draft_translation}
+          replyEmail={result.reply_email}
+          subjectPt={result.reply_subject_pt}
+        />
       )}
     </div>
   );
