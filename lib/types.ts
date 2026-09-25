@@ -6,6 +6,7 @@ export type KeyTerm = {
 };
 
 export type DecodeResult = {
+  is_readable: boolean;
   is_official_letter: boolean;
   sender: string | null;
   document_type: string;

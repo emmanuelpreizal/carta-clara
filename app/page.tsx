@@ -6,6 +6,7 @@ import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/la
 import { MAX_CHARS } from "@/lib/limits";
 import { SAMPLES } from "@/lib/samples";
 import type { DecodeResult } from "@/lib/types";
+import { MAX_PDF_BYTES, prepareUpload, type UploadedFile } from "@/lib/upload";
 
 type ErrorState = { message: string; canRetry: boolean };
 
@@ -16,8 +17,12 @@ export default function Home() {
   const [error, setError] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<DecodeResult | null>(null);
   const [resultBeta, setResultBeta] = useState(false);
+  const [resultFromFile, setResultFromFile] = useState(false);
+  const [upload, setUpload] = useState<UploadedFile | null>(null);
+  const [preparing, setPreparing] = useState(false);
 
   const outputRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selected = findLanguage(language);
   const tooLong = text.length > MAX_CHARS;
@@ -28,37 +33,77 @@ export default function Home() {
     }
   }, [loading, result, error]);
 
-  async function decode() {
+  function clearUpload() {
+    setUpload(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function onFileChosen(file: File | undefined) {
+    if (!file) return;
     setError(null);
-    if (!text.trim()) {
-      setError({ message: "Paste the text of a letter first.", canRetry: false });
-      return;
-    }
-    if (tooLong) {
+    setResult(null);
+    setPreparing(true);
+    try {
+      setUpload(await prepareUpload(file));
+    } catch (e) {
+      clearUpload();
+      const reason = e instanceof Error ? e.message : "";
       setError({
-        message: `This text is too long. Keep it under ${MAX_CHARS} characters.`,
+        message:
+          reason === "pdf_too_large"
+            ? `This PDF is too large (max ${MAX_PDF_BYTES / 1024 / 1024} MB). Paste the text instead.`
+            : "This file could not be opened. Use a JPG or PNG photo, a PDF, or paste the text.",
         canRetry: false,
       });
-      return;
+    } finally {
+      setPreparing(false);
+    }
+  }
+
+  async function decode() {
+    setError(null);
+    if (!upload) {
+      if (!text.trim()) {
+        setError({
+          message: "Paste the text of a letter, or add a photo, first.",
+          canRetry: false,
+        });
+        return;
+      }
+      if (tooLong) {
+        setError({
+          message: `This text is too long. Keep it under ${MAX_CHARS} characters.`,
+          canRetry: false,
+        });
+        return;
+      }
     }
     setLoading(true);
     setResult(null);
     try {
+      const payload = upload
+        ? { language, file: { data: upload.data, media_type: upload.media_type } }
+        : { language, text };
       const res = await fetch("/api/decode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data) {
         setError({
-          message: data?.message ?? "Something went wrong. Please try again.",
-          canRetry: res.status >= 500 || !data,
+          message:
+            data?.message ??
+            (res.status === 413
+              ? "This file is too large. Try a smaller photo or paste the text."
+              : "Something went wrong. Please try again."),
+          canRetry: (res.status >= 500 || !data) && res.status !== 413,
         });
         return;
       }
       setResult(data as DecodeResult);
       setResultBeta(selected?.beta ?? false);
+      setResultFromFile(Boolean(upload));
     } catch {
       setError({ message: "No connection. Check your internet and try again.", canRetry: true });
     } finally {
@@ -79,7 +124,7 @@ export default function Home() {
         </p>
         <ol className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-700">
           <li>
-            <span className="font-bold text-azul">1.</span> Paste the letter
+            <span className="font-bold text-azul">1.</span> Paste or photograph the letter
           </li>
           <li>
             <span className="font-bold text-azul">2.</span> Pick your language
@@ -105,6 +150,7 @@ export default function Home() {
                 type="button"
                 onClick={() => {
                   setText(s.text);
+                  clearUpload();
                   setResult(null);
                   setError(null);
                 }}
@@ -137,6 +183,51 @@ export default function Home() {
         </div>
 
         <div>
+          <input
+            ref={fileInputRef}
+            id="letter-file"
+            type="file"
+            accept="image/*,application/pdf"
+            className="sr-only"
+            onChange={(e) => onFileChosen(e.target.files?.[0])}
+          />
+          {upload ? (
+            <div className="flex items-center gap-3 rounded-lg border border-azul bg-azul-light p-3">
+              {upload.previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={upload.previewUrl}
+                  alt="Your photo"
+                  className="h-16 w-12 rounded object-cover"
+                />
+              ) : (
+                <span className="flex h-16 w-12 items-center justify-center rounded bg-white text-xs font-bold text-azul">
+                  PDF
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-900">{upload.name}</p>
+                <p className="text-xs text-slate-600">This file will be read instead of the text.</p>
+              </div>
+              <button
+                type="button"
+                onClick={clearUpload}
+                className="min-h-11 rounded-lg px-3 text-sm font-semibold text-azul hover:bg-white"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <label
+              htmlFor="letter-file"
+              className="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-400 px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              {preparing ? "Preparing your file…" : "Or take a photo / upload a PDF"}
+            </label>
+          )}
+        </div>
+
+        <div>
           <label htmlFor="language" className="mb-1 block font-semibold text-slate-900">
             Explain it in
           </label>
@@ -157,14 +248,15 @@ export default function Home() {
         <button
           type="button"
           onClick={decode}
-          disabled={loading}
+          disabled={loading || preparing}
           className="min-h-12 w-full rounded-xl bg-azul text-lg font-bold text-white hover:bg-azul-dark disabled:opacity-60"
         >
           {loading ? "Reading your letter…" : "Decode it"}
         </button>
 
         <p className="text-xs text-slate-500">
-          Not stored by this app. Your text is processed by an AI service to produce the result.
+          Not stored by this app. Your text or file is processed by an AI service to produce the
+          result.
         </p>
       </section>
 
@@ -188,13 +280,37 @@ export default function Home() {
             Finding the sender, the deadline and what you need to do…
           </p>
         )}
-        {result && !result.is_official_letter && (
+        {result && !result.is_readable && (
+          <div className="rounded-lg bg-amber-50 px-3 py-3 text-amber-900">
+            <p className="font-semibold">We could not read this file clearly.</p>
+            <p className="mt-1 text-sm">
+              Take a new photo of the whole page, flat, in good light. Or paste the text instead.
+            </p>
+            {result.uncertainties.length > 0 && (
+              <ul className="mt-2 list-disc pl-5 text-sm">
+                {result.uncertainties.map((u) => (
+                  <li key={u}>{u}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+        {result && result.is_readable && !result.is_official_letter && (
           <p className="rounded-lg bg-slate-100 px-3 py-3 text-slate-800">
             This does not look like an official letter. Carta Clara works with letters from
             Portuguese public bodies, like the tax office, social security or the city hall.
           </p>
         )}
-        {result && result.is_official_letter && <ActionCard result={result} beta={resultBeta} />}
+        {result && result.is_readable && result.is_official_letter && (
+          <>
+            {resultFromFile && (
+              <p className="mb-3 rounded-lg bg-azul-light px-3 py-2 text-sm text-azul">
+                Read from your file: compare the dates and amounts with your document.
+              </p>
+            )}
+            <ActionCard result={result} beta={resultBeta} />
+          </>
+        )}
       </div>
 
       <footer className="mt-10 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">

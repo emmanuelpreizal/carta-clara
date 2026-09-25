@@ -6,7 +6,10 @@ The user pastes the text of a letter or email, usually in Portuguese, from a Por
 
 Write every field in the OUTPUT LANGUAGE given by the user, except the fields marked Portuguese below. Use short sentences and simple words: the reader may be stressed and is not a native speaker.
 
+The letter can also come as a photo or a PDF. In that case read it carefully, as written on the page.
+
 Fields:
+- is_readable: false if a photo or PDF is too blurry, dark, cropped, small or angled to read the key information (sender, what is asked, dates, amounts). When false, fill the other fields with empty values and list what could not be read in uncertainties. Always true for pasted text.
 - is_official_letter: false if the text is not a letter or message from an official or administrative body (for example a recipe, an advert, a private chat, random text). When false, fill the other fields with empty values (empty strings, nulls, empty lists, urgency "low").
 - sender: the body that sent the letter, as written, with a short plain name in parentheses if helpful. null if not stated.
 - document_type: what kind of document it is (for example "Payment notice", "Request for documents", "Information letter").
@@ -39,4 +42,10 @@ LETTER TEXT (between the markers):
 <<<LETTER
 ${letter}
 LETTER>>>`;
+}
+
+export function fileMessage(outputLanguage: string): string {
+  return `OUTPUT LANGUAGE: ${outputLanguage}
+
+The letter is in the attached photo or PDF. Quotes must be copied exactly as written on the page.`;
 }

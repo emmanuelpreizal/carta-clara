@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const DecodeSchema = z.object({
+  is_readable: z.boolean(),
   is_official_letter: z.boolean(),
   sender: z.string().nullable(),
   document_type: z.string(),

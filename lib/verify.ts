@@ -50,9 +50,9 @@ function isRealDate(value: string): boolean {
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
 }
 
-export function verifyAgainstText(
+export function verifyResult(
   result: DecodeResult,
-  source: string,
+  source: string | null,
   languageCode: string,
 ): DecodeResult {
   const messages = NOT_CONFIRMED[languageCode] ?? NOT_CONFIRMED.en;
@@ -65,6 +65,14 @@ export function verifyAgainstText(
 
   if (out.deadline && !isRealDate(out.deadline)) {
     out.deadline = null;
+  }
+
+  if (source === null) {
+    if (!out.reply_needed) {
+      out.reply_draft_pt = null;
+      out.reply_draft_translation = null;
+    }
+    return out;
   }
 
   const hasDeadline = Boolean(out.deadline || out.deadline_relative);
