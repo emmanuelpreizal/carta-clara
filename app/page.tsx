@@ -1,69 +1,120 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import ActionCard from "@/components/ActionCard";
+import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/languages";
+import { MOCK_RESULT } from "@/lib/mock";
+import type { DecodeResult } from "@/lib/types";
+
+const MAX_CHARS = 6000;
 
 export default function Home() {
+  const [text, setText] = useState("");
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<DecodeResult | null>(null);
+
+  const selected = findLanguage(language);
+  const tooLong = text.length > MAX_CHARS;
+
+  async function decode() {
+    setError(null);
+    if (!text.trim()) {
+      setError("Paste the text of a letter first.");
+      return;
+    }
+    if (tooLong) {
+      setError(`This text is too long. Keep it under ${MAX_CHARS} characters.`);
+      return;
+    }
+    setLoading(true);
+    setResult(null);
+    await new Promise((r) => setTimeout(r, 1200));
+    setResult(MOCK_RESULT);
+    setLoading(false);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:py-10">
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-900">Carta Clara</h1>
+        <p className="mt-1 text-slate-600">
+          Paste an official Portuguese letter. Understand in seconds what it asks, by when, and
+          what to do.
+        </p>
+      </header>
+
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div>
+          <label htmlFor="letter" className="mb-1 block font-semibold text-slate-900">
+            Letter text
+          </label>
+          <textarea
+            id="letter"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={8}
+            placeholder="Paste the text of the letter or email here…"
+            className="w-full rounded-lg border border-slate-300 p-3 text-base text-slate-900 focus:border-slate-900 focus:outline-none"
+          />
+          <div className="mt-1 flex justify-between gap-2 text-xs text-slate-500">
+            <span>Hide your name, NIF and address before pasting.</span>
+            <span className={tooLong ? "font-semibold text-red-700" : ""}>
+              {text.length}/{MAX_CHARS}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="language" className="mb-1 block font-semibold text-slate-900">
+            Explain it in
+          </label>
+          <select
+            id="language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-900"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.beta ? `${l.label} (${BETA_NOTICE})` : l.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          onClick={decode}
+          disabled={loading}
+          className="min-h-12 w-full rounded-xl bg-slate-900 text-lg font-bold text-white hover:bg-slate-700 disabled:opacity-60"
+        >
+          {loading ? "Reading your letter…" : "Decode it"}
+        </button>
+
+        <p className="text-xs text-slate-500">
+          Not stored by this app. Your text is processed by an AI service to produce the result.
+        </p>
+      </section>
+
+      <div className="mt-6" aria-live="polite">
+        {error && (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-red-800" role="alert">
+            {error}
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        )}
+        {loading && (
+          <p className="animate-pulse text-center text-slate-600">
+            Finding the sender, the deadline and what you need to do…
+          </p>
+        )}
+        {result && <ActionCard result={result} beta={selected?.beta ?? false} />}
+      </div>
+
+      <footer className="mt-10 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
+        <p className="font-semibold">This is not legal or tax advice.</p>
+      </footer>
+    </main>
   );
 }
