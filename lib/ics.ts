@@ -21,12 +21,12 @@ export function buildIcs(params: {
   const start = new Date(Date.UTC(y, m - 1, d));
   const end = new Date(Date.UTC(y, m - 1, d + 1));
   const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}@carta-clara`;
+  const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}@descodifica`;
 
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Carta Clara//EN",
+    "PRODID:-//Descodifica//EN",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${uid}`,

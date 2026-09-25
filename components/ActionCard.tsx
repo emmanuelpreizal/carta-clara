@@ -40,7 +40,7 @@ function addToCalendar(result: DecodeResult) {
     ...result.actions.map((a, i) => `${i + 1}. ${a}`),
     "",
     result.amount_text ? `Amount: ${result.amount_text}` : "",
-    "Check the date on the original letter. Created with Carta Clara. Not legal or tax advice.",
+    "Check the date on the original letter. Created with Descodifica. Not legal or tax advice.",
   ]
     .filter((line, i, all) => line !== "" || all[i - 1] !== "")
     .join("\n");

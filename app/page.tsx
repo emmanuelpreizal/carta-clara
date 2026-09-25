@@ -117,7 +117,7 @@ export default function Home() {
         <p className="mb-2 inline-block rounded-full bg-azul-light px-3 py-1 text-xs font-semibold text-azul">
           For newcomers to Portugal
         </p>
-        <h1 className="text-3xl font-bold text-azul">Carta Clara</h1>
+        <h1 className="text-3xl font-bold text-azul">Descodifica</h1>
         <p className="mt-1 text-slate-600">
           Paste an official Portuguese letter. Understand in seconds what it asks, by when, and
           what to do.
@@ -297,7 +297,7 @@ export default function Home() {
         )}
         {result && result.is_readable && !result.is_official_letter && (
           <p className="rounded-lg bg-slate-100 px-3 py-3 text-slate-800">
-            This does not look like an official letter. Carta Clara works with letters from
+            This does not look like an official letter. Descodifica works with letters from
             Portuguese public bodies, like the tax office, social security or the city hall.
           </p>
         )}

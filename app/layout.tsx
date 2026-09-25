@@ -8,7 +8,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Carta Clara — understand official Portuguese letters",
+  title: "Descodifica — understand official Portuguese letters",
   description:
     "Paste an official Portuguese letter and get a clear action card: who is writing, how urgent it is, the deadline, the amount and what to do.",
 };

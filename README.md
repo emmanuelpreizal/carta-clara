@@ -1,11 +1,14 @@
-# Carta Clara
+# Descodifica
 
 Understand official Portuguese letters in seconds.
 
-Paste the text of a letter from the tax office (Finanças), social security (Segurança Social)
-or the city hall, and get a clear action card in your language: who is writing, how urgent it
-is, the deadline with days left and the original sentence, the amount, what to do, and a draft
-reply in European Portuguese with its translation.
+Paste, photograph or upload (PDF) a letter from the tax office (Finanças), social security
+(Segurança Social) or the city hall, and get a clear action card in your language: who is
+writing, how urgent it is, the deadline with days left and the original sentence, the amount,
+what to do, and a draft reply in European Portuguese with its translation.
+
+Add the deadline to your calendar with a reminder, and open the reply in your own email app.
+The app never sends anything on your behalf.
 
 Built solo at the AI Hacker House: Equinox Edition (Lisbon, 25 September 2026), Social Good track.
 
