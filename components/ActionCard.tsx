@@ -165,6 +165,7 @@ export default function ActionCard({ result, beta }: Props) {
 
       {result.reply_needed && result.reply_draft_pt && (
         <ReplyDraft
+          key={result.reply_draft_pt}
           draftPt={result.reply_draft_pt}
           translation={result.reply_draft_translation}
           replyEmail={result.reply_email}
