@@ -27,8 +27,8 @@ export default function ReplyDraft({ draftPt, translation }: Props) {
       </summary>
       <div className="space-y-4 border-t border-slate-200 px-4 py-4">
         <p className="text-sm text-slate-600">
-          Replace [NOME] with your name and [NIF] with your tax number. Send it yourself through
-          the official channel.
+          Replace every part in [brackets] with your own details, for example [NOME] (your name)
+          and [NIF] (your tax number). Send it yourself through the official channel.
         </p>
         <div>
           <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
