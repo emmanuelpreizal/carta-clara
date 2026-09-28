@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ActionCard from "@/components/ActionCard";
 import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/languages";
@@ -112,6 +113,20 @@ export default function Home() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:py-10">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <a
+          href="https://aiflowia.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="AI Flow IA website"
+        >
+          <Image src="/aiflowia-logo.png" alt="AI Flow IA" width={120} height={30} priority />
+        </a>
+        <p className="mt-2 text-sm text-slate-600">
+          AI tools that make everyday life simpler.
+        </p>
+      </div>
+
       <header className="mb-6">
         <p className="mb-2 inline-block rounded-full bg-azul-light px-3 py-1 text-xs font-semibold text-azul">
           For newcomers to Portugal
