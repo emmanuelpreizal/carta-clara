@@ -7,12 +7,19 @@ type Props = {
   translation: string | null;
   replyEmail: string | null;
   subjectPt: string | null;
+  condition: string | null;
 };
 
 const textareaClass =
   "w-full rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm text-slate-900 focus:border-azul focus:bg-white focus:outline-none";
 
-export default function ReplyDraft({ draftPt, translation, replyEmail, subjectPt }: Props) {
+export default function ReplyDraft({
+  draftPt,
+  translation,
+  replyEmail,
+  subjectPt,
+  condition,
+}: Props) {
   const [ptText, setPtText] = useState(draftPt);
   const [ownText, setOwnText] = useState(translation ?? "");
   const [syncedOwnText, setSyncedOwnText] = useState(translation ?? "");
@@ -63,8 +70,19 @@ export default function ReplyDraft({ draftPt, translation, replyEmail, subjectPt
     <details className="rounded-xl border border-slate-200 bg-white">
       <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-slate-900">
         Draft reply in Portuguese
+        {condition && (
+          <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">
+            optional
+          </span>
+        )}
       </summary>
       <div className="space-y-5 border-t border-slate-200 px-4 py-4">
+        {condition && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <span className="font-semibold">Only useful in this case: </span>
+            {condition}
+          </p>
+        )}
         <p className="text-sm text-slate-600">
           Replace every part in [brackets] with your own details, for example [NOME] (your name)
           and [NIF] (your tax number). Send it yourself through the official channel.

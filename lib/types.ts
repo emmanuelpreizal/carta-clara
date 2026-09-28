@@ -21,6 +21,7 @@ export type DecodeResult = {
   actions: string[];
   key_terms: KeyTerm[];
   reply_needed: boolean;
+  reply_condition: string | null;
   reply_email: string | null;
   reply_subject_pt: string | null;
   reply_draft_pt: string | null;

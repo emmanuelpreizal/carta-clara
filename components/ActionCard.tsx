@@ -188,6 +188,7 @@ export default function ActionCard({ result, beta }: Props) {
           translation={result.reply_draft_translation}
           replyEmail={result.reply_email}
           subjectPt={result.reply_subject_pt}
+          condition={result.reply_condition}
         />
       )}
     </div>

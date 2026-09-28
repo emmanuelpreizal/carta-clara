@@ -23,10 +23,11 @@ Fields:
 - amount_quote: the exact sentence from the letter, copied character for character in Portuguese, that states the amount. null if no amount.
 - actions: at most 3 concrete steps, each starting with a verb, taken only from what the letter asks. An empty list if the letter asks nothing.
 - key_terms: at most 3 difficult Portuguese words or expressions from the letter (field pt, in Portuguese) with their plain meaning (field meaning, in the output language).
-- reply_needed: true only if the letter asks the reader to answer, send documents, or contest something in writing.
+- reply_needed: true if the letter asks the reader to answer or send documents, OR if the letter itself offers the possibility to write back (for example to contest, explain a situation, confirm, reschedule or request a payment plan). false for purely informative letters and for letters where the only possible action is to pay or to go somewhere.
+- reply_condition: if the reply is optional or only useful in a specific situation described in the letter, that situation in one short sentence in the output language (for example "Only if your car was sold before the tax was due."). null if the letter simply asks for a reply.
 - reply_email: an email address written in the letter where the reader can reply or send documents, copied exactly. null if the letter gives no email address. Never guess one.
 - reply_subject_pt: if reply_needed, a short email subject in European Portuguese that includes any process or reference number from the letter. Otherwise null.
-- reply_draft_pt: if reply_needed, a short polite reply in European Portuguese (Portugal, not Brazil: use "Exmos. Senhores", "Com os melhores cumprimentos"). Use the placeholders [NOME] and [NIF] for the reader's name and tax number, and square-bracket placeholders for any other personal data. Otherwise null.
+- reply_draft_pt: if reply_needed, a short polite reply in European Portuguese (Portugal, not Brazil: use "Exmos. Senhores", "Com os melhores cumprimentos"). When there is a reply_condition, write the reply for that situation and use square-bracket placeholders for facts the reader must add (for example [DATA DA VENDA]). Never invent facts about the reader. Use the placeholders [NOME] and [NIF] for the reader's name and tax number, and square-bracket placeholders for any other personal data. Otherwise null.
 - reply_draft_translation: the translation of reply_draft_pt into the output language, keeping the placeholders. null if no draft.
 - uncertainties: anything unreadable, ambiguous, missing or contradictory that the reader must check on the original letter. An empty list if none.
 

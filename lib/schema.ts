@@ -16,6 +16,7 @@ export const DecodeSchema = z.object({
   actions: z.array(z.string()),
   key_terms: z.array(z.object({ pt: z.string(), meaning: z.string() })),
   reply_needed: z.boolean(),
+  reply_condition: z.string().nullable(),
   reply_email: z.string().nullable(),
   reply_subject_pt: z.string().nullable(),
   reply_draft_pt: z.string().nullable(),

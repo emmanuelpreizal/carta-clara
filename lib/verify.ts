@@ -75,6 +75,7 @@ export function verifyResult(
   }
 
   if (!out.reply_needed) {
+    out.reply_condition = null;
     out.reply_subject_pt = null;
     out.reply_draft_pt = null;
     out.reply_draft_translation = null;
