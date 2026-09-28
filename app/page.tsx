@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ActionCard from "@/components/ActionCard";
+import ResultPreview from "@/components/ResultPreview";
 import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/languages";
 import { MAX_CHARS } from "@/lib/limits";
 import type { DecodeResult } from "@/lib/types";
@@ -249,6 +250,7 @@ export default function Home() {
       </section>
 
       <div ref={outputRef} className="mt-6 scroll-mt-4" aria-live="polite">
+        {!result && !loading && !error && <ResultPreview />}
         {error && (
           <div className="rounded-lg bg-red-50 px-3 py-3 text-red-800" role="alert">
             <p>{error.message}</p>
