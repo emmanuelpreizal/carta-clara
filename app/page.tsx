@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import ActionCard from "@/components/ActionCard";
 import { BETA_NOTICE, DEFAULT_LANGUAGE, LANGUAGES, findLanguage } from "@/lib/languages";
 import { MAX_CHARS } from "@/lib/limits";
-import { SAMPLES } from "@/lib/samples";
 import type { DecodeResult } from "@/lib/types";
 import { MAX_PDF_BYTES, prepareUpload, type UploadedFile } from "@/lib/upload";
 
@@ -136,32 +135,6 @@ export default function Home() {
       </header>
 
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div>
-          <p className="mb-2 text-sm font-semibold text-slate-900">
-            Try a sample{" "}
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
-              demo data, fictional letters
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {SAMPLES.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => {
-                  setText(s.text);
-                  clearUpload();
-                  setResult(null);
-                  setError(null);
-                }}
-                className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm text-slate-800 hover:bg-slate-50"
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div>
           <label htmlFor="letter" className="mb-1 block font-semibold text-slate-900">
             Letter text
