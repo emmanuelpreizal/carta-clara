@@ -10,6 +10,25 @@ import type { DecodeResult } from "@/lib/types";
 import { MAX_PDF_BYTES, prepareUpload, type UploadedFile } from "@/lib/upload";
 
 type ErrorState = { message: string; canRetry: boolean };
+type InputMode = "file" | "text";
+
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </svg>
+  );
+}
+
+function TextIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M9 12h7M9 16h7M9 8h3" />
+    </svg>
+  );
+}
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -21,6 +40,7 @@ export default function Home() {
   const [resultFromFile, setResultFromFile] = useState(false);
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const [preparing, setPreparing] = useState(false);
+  const [mode, setMode] = useState<InputMode>("text");
 
   const outputRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,12 +83,14 @@ export default function Home() {
 
   async function decode() {
     setError(null);
-    if (!upload) {
+    const useFile = mode === "file";
+    if (useFile && !upload) {
+      setError({ message: "Take a photo or choose a file first.", canRetry: false });
+      return;
+    }
+    if (!useFile) {
       if (!text.trim()) {
-        setError({
-          message: "Paste the text of a letter, or add a photo, first.",
-          canRetry: false,
-        });
+        setError({ message: "Paste the text of a letter first.", canRetry: false });
         return;
       }
       if (tooLong) {
@@ -82,9 +104,10 @@ export default function Home() {
     setLoading(true);
     setResult(null);
     try {
-      const payload = upload
-        ? { language, file: { data: upload.data, media_type: upload.media_type } }
-        : { language, text };
+      const payload =
+        useFile && upload
+          ? { language, file: { data: upload.data, media_type: upload.media_type } }
+          : { language, text };
       const res = await fetch("/api/decode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,7 +127,7 @@ export default function Home() {
       }
       setResult(data as DecodeResult);
       setResultBeta(selected?.beta ?? false);
-      setResultFromFile(Boolean(upload));
+      setResultFromFile(useFile);
     } catch {
       setError({ message: "No connection. Check your internet and try again.", canRetry: true });
     } finally {
@@ -152,7 +175,37 @@ export default function Home() {
 
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div>
-          <label htmlFor="letter" className="mb-1 block font-semibold text-slate-900">
+          <p className="mb-2 font-semibold text-slate-900">Your letter</p>
+          <div className="grid grid-cols-2 gap-2" role="group" aria-label="How to add your letter">
+            {(
+              [
+                { id: "file", label: "Photo or PDF", icon: <CameraIcon /> },
+                { id: "text", label: "Paste text", icon: <TextIcon /> },
+              ] as const
+            ).map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                aria-pressed={mode === m.id}
+                onClick={() => {
+                  setMode(m.id);
+                  setError(null);
+                }}
+                className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 px-3 text-base font-semibold transition-colors ${
+                  mode === m.id
+                    ? "border-azul bg-azul-light text-azul"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                }`}
+              >
+                {m.icon}
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div hidden={mode !== "text"}>
+          <label htmlFor="letter" className="sr-only">
             Letter text
           </label>
           <textarea
@@ -161,7 +214,7 @@ export default function Home() {
             onChange={(e) => setText(e.target.value)}
             rows={5}
             placeholder="Paste the text of the letter or email here…"
-            className="w-full rounded-lg border border-slate-300 p-3 text-base text-slate-900 focus:border-slate-900 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 p-3 text-base text-slate-900 focus:border-azul focus:outline-none"
           />
           <div className="mt-1 flex justify-between gap-2 text-xs text-slate-500">
             <span>Hide your name, NIF and address before pasting.</span>
@@ -171,7 +224,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div>
+        <div hidden={mode !== "file"}>
           <input
             ref={fileInputRef}
             id="letter-file"
@@ -196,7 +249,7 @@ export default function Home() {
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-slate-900">{upload.name}</p>
-                <p className="text-xs text-slate-600">This file will be read instead of the text.</p>
+                <p className="text-xs text-slate-600">Ready to decode.</p>
               </div>
               <button
                 type="button"
@@ -209,9 +262,17 @@ export default function Home() {
           ) : (
             <label
               htmlFor="letter-file"
-              className="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-400 px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+              className="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 px-3 text-center hover:border-azul hover:bg-azul-light"
             >
-              {preparing ? "Preparing your file…" : "Or take a photo / upload a PDF"}
+              <span className="text-azul">
+                <CameraIcon />
+              </span>
+              <span className="font-semibold text-slate-900">
+                {preparing ? "Preparing your file…" : "Take a photo or choose a file"}
+              </span>
+              <span className="text-xs text-slate-500">
+                JPG, PNG or PDF. The whole page, flat, in good light.
+              </span>
             </label>
           )}
         </div>
