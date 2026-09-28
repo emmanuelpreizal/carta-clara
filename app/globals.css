@@ -10,6 +10,8 @@
   --color-azul: #1f4e8c;
   --color-azul-dark: #163a69;
   --color-azul-light: #e8eff8;
+  --color-brand-red: #f2545b;
+  --color-brand-blue: #3b7fe0;
 }
 
 @theme inline {

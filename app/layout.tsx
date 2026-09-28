@@ -21,7 +21,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <div className="h-1 w-full bg-gradient-to-r from-brand-red to-brand-blue" aria-hidden="true" />
+        {children}
+      </body>
     </html>
   );
 }

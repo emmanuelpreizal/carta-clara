@@ -30,6 +30,44 @@ function TextIcon() {
   );
 }
 
+function SmallIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+const TRUST_ITEMS = [
+  {
+    label: "Nothing stored",
+    icon: (
+      <SmallIcon>
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+      </SmallIcon>
+    ),
+  },
+  {
+    label: `${LANGUAGES.length} languages`,
+    icon: (
+      <SmallIcon>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      </SmallIcon>
+    ),
+  },
+  {
+    label: "Not legal advice",
+    icon: (
+      <SmallIcon>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5M12 8h.01" />
+      </SmallIcon>
+    ),
+  },
+];
+
 export default function Home() {
   const [text, setText] = useState("");
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
@@ -304,7 +342,19 @@ export default function Home() {
           {loading ? "Reading your letter…" : "Decode it"}
         </button>
 
-        <p className="text-xs text-slate-500">
+        <ul className="flex flex-wrap justify-center gap-2" aria-label="Good to know">
+          {TRUST_ITEMS.map((item) => (
+            <li
+              key={item.label}
+              className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700"
+            >
+              <span className="text-azul">{item.icon}</span>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+
+        <p className="text-center text-xs text-slate-500">
           Not stored by this app. Your text or file is processed by an AI service to produce the
           result.
         </p>
