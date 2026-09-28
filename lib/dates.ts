@@ -17,19 +17,3 @@ export function displayUrgency(aiUrgency: Urgency, days: number | null): Display
   if (days !== null && days <= URGENT_WITHIN_DAYS) return "high";
   return aiUrgency;
 }
-
-export function formatDeadline(deadline: string): string {
-  const [y, m, d] = deadline.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-export function daysLeftLabel(days: number): string {
-  if (days < 0) return `${Math.abs(days)} day${days === -1 ? "" : "s"} overdue`;
-  if (days === 0) return "today";
-  return `${days} day${days === 1 ? "" : "s"} left`;
-}

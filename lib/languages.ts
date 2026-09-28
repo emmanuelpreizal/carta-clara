@@ -14,10 +14,6 @@ export const LANGUAGES: Language[] = [
   { code: "zh", label: "中文", promptName: "Simplified Chinese (Mandarin)", beta: true },
 ];
 
-export const DEFAULT_LANGUAGE = "en";
-
-export const BETA_NOTICE = "beta — not verified by a native speaker";
-
 export function findLanguage(code: string): Language | undefined {
   return LANGUAGES.find((l) => l.code === code);
 }
